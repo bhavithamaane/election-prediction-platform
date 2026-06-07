@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karnataka VoteCast | Election Prediction & Simulation Platform</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-chart-line brand-icon"></i>
+                <span class="brand-name">Vote<span>Cast</span></span>
+            </div>
+            <nav class="nav-menu">
+                <a href="#dashboard" class="nav-item active" data-view="dashboard">
+                    <i class="fa-solid fa-gauge"></i> <span>Dashboard</span>
+                </a>
+                <a href="#map" class="nav-item" data-view="map">
+                    <i class="fa-solid fa-map-location-dot"></i> <span>Interactive Map</span>
+                </a>
+                <a href="#simulation" class="nav-item" data-view="simulation">
+                    <i class="fa-solid fa-sliders"></i> <span>Simulation Tool</span>
+                </a>
+                <a href="#historical" class="nav-item" data-view="historical">
+                    <i class="fa-solid fa-clock-rotate-left"></i> <span>Historical Trend</span>
+                </a>
+                <a href="#admin" class="nav-item" data-view="admin">
+                    <i class="fa-solid fa-user-shield"></i> <span>Admin Panel</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <span class="version">v1.0.0 (MVP)</span>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-title">
+                    <h1 id="page-title">Prediction Dashboard</h1>
+                    <p class="subtitle">Real-time election projections & swing analysis</p>
+                </div>
+                <div class="user-status" id="user-status-widget">
+                    <span class="status-badge"><i class="fa-solid fa-globe"></i> Public Mode</span>
+                </div>
+            </header>
+
+            <!-- Dashboard View -->
+            <section id="view-dashboard" class="content-view active-view">
+                <!-- Summary Cards Grid -->
+                <div class="metrics-grid">
+                    <div class="metric-card glass-panel animate-fade-in">
+                        <div class="metric-header">
+                            <h3>Total Seats</h3>
+                            <i class="fa-solid fa-person-booth icon-purple"></i>
+                        </div>
+                        <div class="metric-body">
+                            <span class="metric-value">28</span>
+                            <span class="metric-label">Karnataka Lok Sabha Seats</span>
+                        </div>
+                    </div>
+                    <div class="metric-card glass-panel animate-fade-in" style="animation-delay: 0.1s;">
+                        <div class="metric-header">
+                            <h3>Projected Winner</h3>
+                            <i class="fa-solid fa-trophy icon-gold"></i>
+                        </div>
+                        <div class="metric-body">
+                            <span class="metric-value" id="projected-winner">Loading...</span>
+                            <span class="metric-label" id="projected-winner-sub">Majority is 15 seats</span>
+                        </div>
+                    </div>
+                    <div class="metric-card glass-panel animate-fade-in" style="animation-delay: 0.2s;">
+                        <div class="metric-header">
+                            <h3>Confidence Level</h3>
+                            <i class="fa-solid fa-shield-halved icon-blue"></i>
+                        </div>
+                        <div class="metric-body">
+                            <span class="metric-value" id="confidence-score">0%</span>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="confidence-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Social Pulse Card -->
+                <div class="social-pulse-card glass-panel animate-fade-in" style="animation-delay: 0.3s;">
+                    <div class="pulse-header">
+                        <div class="pulse-title-group">
+                            <span class="live-badge"><span class="live-dot"></span>LIVE</span>
+                            <h2>Real-Time Social Pulse</h2>
+                            <p>Google Trends + News Sentiment (Karnataka)</p>
+                        </div>
+                        <div class="pulse-meta">
+                            <span id="pulse-sources" class="source-tag"></span>
+                            <span id="pulse-updated" class="updated-tag"><i class="fa-solid fa-clock"></i> Fetching...</span>
+                            <button id="btn-refresh-social" class="btn-icon" title="Refresh social data">
+                                <i class="fa-solid fa-rotate-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="pulse-bars" id="pulse-bars-container">
+                        <!-- Populated by app.js -->
+                        <div class="pulse-skeleton"></div>
+                        <div class="pulse-skeleton"></div>
+                        <div class="pulse-skeleton"></div>
+                        <div class="pulse-skeleton"></div>
+                    </div>
+                    <div class="pulse-news" id="pulse-news-container" style="display:none;">
+                        <h4><i class="fa-solid fa-newspaper"></i> Latest News Sentiment</h4>
+                        <div id="pulse-news-list" class="news-list"></div>
+                    </div>
+                </div>
+
+                <!-- Main Dashboard Content Grid -->
+                <div class="dashboard-grid">
+                    <!-- Seat Distribution Chart Card -->
+                    <div class="chart-card glass-panel animate-slide-up">
+                        <div class="card-header">
+                            <h2>Projected Seat Distribution</h2>
+                            <p>Seats won by each major party alliance</p>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="seatsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Vote Share Chart Card -->
+                    <div class="chart-card glass-panel animate-slide-up" style="animation-delay: 0.1s;">
+                        <div class="card-header">
+                            <h2>Karnataka Vote Share</h2>
+                            <p>Projected percentage of total votes</p>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="voteShareChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Latest Polls / Updates Section -->
+                <div class="recent-polls-section glass-panel animate-slide-up" style="animation-delay: 0.2s;">
+                    <div class="card-header">
+                        <h2>Latest Input Opinion Polls</h2>
+                        <p>Opinion polls used as baseline inputs for the current prediction</p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Agency</th>
+                                    <th>Date</th>
+                                    <th>Sample Size</th>
+                                    <th>BJP Share</th>
+                                    <th>INC Share</th>
+                                    <th>JD(S) Share</th>
+                                    <th>Others</th>
+                                </tr>
+                            </thead>
+                            <tbody id="polls-table-body">
+                                <tr>
+                                    <td colspan="7" class="text-center">Loading poll data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Map View -->
+            <section id="view-map" class="content-view">
+                <div class="map-layout">
+                    <!-- SVG Map Card -->
+                    <div class="map-card glass-panel">
+                        <div class="card-header">
+                            <h2>Region-Wise Projection Map</h2>
+                            <p>Click on any region to view detailed seat and vote projections</p>
+                        </div>
+                        <div class="map-container" id="svg-map-wrapper">
+                            <!-- Simplified Grid/SVG Map of India -->
+                            <div class="map-grid-container" id="states-grid-map">
+                                <!-- Generated programmatically in map.js -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- State Detail Card -->
+                    <div class="state-detail-card glass-panel" id="state-detail-panel">
+                        <div class="detail-placeholder">
+                            <i class="fa-solid fa-map-location-dot"></i>
+                            <h3>Select a Region</h3>
+                            <p>Click on the map or select from the list below to view regional predictions.</p>
+                            
+                            <div class="state-select-wrapper">
+                                <label for="region-selector">Choose a Region:</label>
+                                <select id="region-selector" class="form-input">
+                                    <option value="">-- Choose Region --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="detail-content hidden" id="state-detail-content">
+                            <div class="detail-header">
+                                <h2 id="detail-state-name">Bengaluru</h2>
+                                <span class="badge" id="detail-state-seats">4 Seats</span>
+                            </div>
+                            <div class="detail-winner-box">
+                                <span class="winner-label">Projected Winner</span>
+                                <span class="winner-value" id="detail-state-winner">BJP</span>
+                            </div>
+                            <div class="detail-confidence-box">
+                                <div class="box-header">
+                                    <span>Confidence</span>
+                                    <span id="detail-state-confidence">85%</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" id="detail-state-conf-bar" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            <div class="detail-stats-section">
+                                <h3>Predicted Seat Breakdown</h3>
+                                <div class="seats-progress-list" id="detail-state-seats-list">
+                                    <!-- Populated programmatically -->
+                                </div>
+                            </div>
+                            <div class="detail-stats-section">
+                                <h3>Predicted Vote Share</h3>
+                                <div class="chart-container-mini">
+                                    <canvas id="stateVoteChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Simulation Tool View -->
+            <section id="view-simulation" class="content-view">
+                <div class="simulation-layout">
+                    <!-- Sliders panel -->
+                    <div class="sliders-card glass-panel">
+                        <div class="card-header">
+                            <h2>Win Prediction Simulator</h2>
+                            <p>Set your expected winning percentage for each party to simulate Karnataka seat projections.</p>
+                        </div>
+                        <div class="sliders-container">
+                            <!-- Sliders for each party -->
+                            <div class="slider-group" data-party="BJP">
+                                <div class="slider-header">
+                                    <span class="party-name"><span class="color-dot" style="background-color: #FF9933"></span>BJP (NDA) Expected Win %</span>
+                                    <span class="slider-value" id="val-bjp">46%</span>
+                                </div>
+                                <input type="range" class="swing-slider" id="slider-bjp" min="0" max="100" step="1" value="46">
+                                <div class="slider-limits"><span>0%</span><span>50%</span><span>100%</span></div>
+                            </div>
+
+                            <div class="slider-group" data-party="INC">
+                                <div class="slider-header">
+                                    <span class="party-name"><span class="color-dot" style="background-color: #19AAED"></span>INC (Congress) Expected Win %</span>
+                                    <span class="slider-value" id="val-inc">44%</span>
+                                </div>
+                                <input type="range" class="swing-slider" id="slider-inc" min="0" max="100" step="1" value="44">
+                                <div class="slider-limits"><span>0%</span><span>50%</span><span>100%</span></div>
+                            </div>
+
+                            <div class="slider-group" data-party="JD(S)">
+                                <div class="slider-header">
+                                    <span class="party-name"><span class="color-dot" style="background-color: #006400"></span>JD(S) Expected Win %</span>
+                                    <span class="slider-value" id="val-jds">7%</span>
+                                </div>
+                                <input type="range" class="swing-slider" id="slider-jds" min="0" max="100" step="1" value="7">
+                                <div class="slider-limits"><span>0%</span><span>50%</span><span>100%</span></div>
+                            </div>
+
+                            <div class="slider-group" data-party="Others">
+                                <div class="slider-header">
+                                    <span class="party-name"><span class="color-dot" style="background-color: #777777"></span>Others Expected Win %</span>
+                                    <span class="slider-value" id="val-others">3%</span>
+                                </div>
+                                <input type="range" class="swing-slider" id="slider-others" min="0" max="100" step="1" value="3">
+                                <div class="slider-limits"><span>0%</span><span>50%</span><span>100%</span></div>
+                            </div>
+
+                            <div class="slider-total-warning" id="slider-total-warning" style="color: #ef4444; font-size: 0.85rem; padding: 8px 0; display: none;">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Total: <span id="slider-total-value">100</span>% (should equal 100%)
+                            </div>
+
+                            <div class="action-buttons">
+                                <button id="btn-recalculate" class="btn btn-primary"><i class="fa-solid fa-rotate-right"></i> Run Simulation</button>
+                                <button id="btn-reset-sliders" class="btn btn-secondary"><i class="fa-solid fa-undo"></i> Reset</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Results Simulation panel -->
+                    <div class="simulation-results-card glass-panel">
+                        <div class="card-header">
+                            <h2>Simulation Projection</h2>
+                            <p>Recalculated Karnataka results based on your expected winning percentages</p>
+                        </div>
+                        <div class="sim-winner-card">
+                            <span class="winner-label">Simulated Karnataka Winner</span>
+                            <span class="winner-value" id="sim-winner">BJP</span>
+                            <span class="winner-seats" id="sim-winner-seats">17 Seats</span>
+                        </div>
+                        <div class="sim-chart-container">
+                            <canvas id="simChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Historical View -->
+            <section id="view-historical" class="content-view">
+                <div class="historical-grid">
+                    <!-- Trend Chart Card -->
+                    <div class="chart-card glass-panel">
+                        <div class="card-header">
+                            <h2>Karnataka Election Trends (2014 - 2024)</h2>
+                            <p>Comparison of seat share evolution over the last three Karnataka Lok Sabha elections</p>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="historicalChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Historical Highlights -->
+                    <div class="glass-panel historical-highlights">
+                        <div class="card-header">
+                            <h2>Karnataka Historical Milestones</h2>
+                            <p>Key statistics of previous Karnataka Lok Sabha elections</p>
+                        </div>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-badge">2024</div>
+                                <div class="timeline-body">
+                                    <h4>2024 Karnataka Lok Sabha</h4>
+                                    <p>BJP won 17 of 28 seats in Karnataka with 46.1% vote share. INC won 9 seats with 45.4% vote share. JD(S) won 2 seats.</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-badge">2019</div>
+                                <div class="timeline-body">
+                                    <h4>2019 Karnataka Lok Sabha</h4>
+                                    <p>BJP dominated Karnataka winning 25 of 28 seats with 51.4% vote share. INC won 1 seat and JD(S) won 1 seat.</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-badge">2014</div>
+                                <div class="timeline-body">
+                                    <h4>2014 Karnataka Lok Sabha</h4>
+                                    <p>BJP won 17 seats in Karnataka. INC won 9 seats. JD(S) won 2 seats. The state saw a closely contested battle between BJP and INC.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Admin Panel View -->
+            <section id="view-admin" class="content-view">
+                <!-- Logged Out Container -->
+                <div class="admin-login-container glass-panel animate-fade-in" id="admin-login-box">
+                    <div class="login-header">
+                        <i class="fa-solid fa-lock-open login-icon"></i>
+                        <h2>Admin Authentication</h2>
+                        <p>Authorized access only. Log in to upload poll datasets & manage models.</p>
+                    </div>
+                    <form id="admin-login-form" class="login-form">
+                        <div class="form-group">
+                            <label for="admin-email">Email Address</label>
+                            <input type="email" id="admin-email" class="form-input" placeholder="admin@electionpredict.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="admin-password">Password</label>
+                            <input type="password" id="admin-password" class="form-input" placeholder="••••••••" required>
+                        </div>
+                        <div id="login-error-msg" class="error-message hidden"></div>
+                        <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-sign-in-alt"></i> Authenticate</button>
+                    </form>
+                </div>
+
+                <!-- Logged In Container -->
+                <div class="admin-dashboard-container hidden" id="admin-dashboard-box">
+                    <div class="admin-top-bar">
+                        <div>
+                            <h2>Welcome, <span id="admin-user-name">Admin</span></h2>
+                            <p>You have full administrative privileges over prediction data models</p>
+                        </div>
+                        <button id="btn-admin-logout" class="btn btn-secondary"><i class="fa-solid fa-sign-out-alt"></i> Log Out</button>
+                    </div>
+
+                    <div class="admin-grid">
+                        <!-- Poll Data Upload Form -->
+                        <div class="admin-card glass-panel">
+                            <div class="card-header">
+                                <h2>Upload Opinion Poll Data</h2>
+                                <p>Insert new agency poll metrics directly into the prediction database</p>
+                            </div>
+                            <form id="upload-poll-form" class="admin-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="poll-agency">Polling Agency</label>
+                                        <input type="text" id="poll-agency" class="form-input" placeholder="e.g. India Today" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="poll-sample-size">Sample Size</label>
+                                        <input type="number" id="poll-sample-size" class="form-input" placeholder="e.g. 25000" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="poll-date">Poll Release Date</label>
+                                    <input type="date" id="poll-date" class="form-input" required>
+                                </div>
+                                <hr class="form-divider">
+                                <h3>Vote Share Projections (%)</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="poll-bjp">BJP (NDA)</label>
+                                        <input type="number" id="poll-bjp" class="form-input" min="0" max="100" step="0.1" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="poll-inc">INC (INDIA)</label>
+                                        <input type="number" id="poll-inc" class="form-input" min="0" max="100" step="0.1" required>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="poll-jds">JD(S)</label>
+                                        <input type="number" id="poll-jds" class="form-input" min="0" max="100" step="0.1" value="0">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="poll-others">Others</label>
+                                    <input type="number" id="poll-others" class="form-input" min="0" max="100" step="0.1" required>
+                                </div>
+                                <div id="upload-status-msg" class="status-message hidden"></div>
+                                <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-cloud-arrow-up"></i> Upload & Seed Dataset</button>
+                            </form>
+                        </div>
+
+                        <!-- ML Model Retraining Card -->
+                        <div class="admin-card glass-panel">
+                            <div class="card-header">
+                                <h2>Prediction Engine Control</h2>
+                                <p>Manage and retrain the machine learning prediction model</p>
+                            </div>
+                            <div class="control-box">
+                                <div class="model-status-indicator">
+                                    <span class="status-label">Engine Status:</span>
+                                    <span class="status-val status-online"><span class="dot"></span> Online</span>
+                                </div>
+                                <div class="model-status-indicator">
+                                    <span class="status-label">Active Model:</span>
+                                    <span class="status-val text-normal">Hybrid FPTP Swing Predictor</span>
+                                </div>
+                                <p class="control-desc">Retraining fits the model features with all historical records and inputs, updating baseline swing calculations and seat boundaries.</p>
+                                <button id="btn-retrain-model" class="btn btn-warning btn-block"><i class="fa-solid fa-gears"></i> Retrain ML Pipeline</button>
+                                <div id="retrain-status-msg" class="status-message hidden"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Custom JavaScript modules -->
+    <script src="js/app.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
